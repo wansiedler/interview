@@ -12,7 +12,7 @@ import {withSnackbar} from 'notistack';
 class AddIngredient extends Component {
     state = {
         date: generateRandomDateInTheFuture(),
-        cocktail: ""
+        cocktail: null
     };
 
     handleSubmit = e => {
@@ -24,7 +24,7 @@ class AddIngredient extends Component {
         this.props.addIngredient(this.state.cocktail, this.state.date);
         this.setState({
             date: generateRandomDateInTheFuture(),
-            cocktail: ""
+            cocktail: null
         })
     };
 
@@ -71,9 +71,6 @@ class AddIngredient extends Component {
                     </Button>
                 </Grid>
 
-                {/*<p className="error">*/}
-                {/*    Error, must enter a value!*/}
-                {/*</p>*/}
             </>
         );
     }

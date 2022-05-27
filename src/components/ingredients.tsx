@@ -28,26 +28,3 @@ export const ingredients = [{"alcoholic": true, "name": "Vodka"}, {
     "alcoholic": true,
     "name": "Aperol",
 }, {"alcoholic": true, "name": "Ginger beer"}, {"alcoholic": true, "name": "Coffee liqueur"}]
-
-export const Ingredients = (ingredients: ingredientType[]) => {
-    return (<div style={{float: "left"}}>
-        <h1>
-            {capitalizeFirstLetters("all possible ingredients")}
-        </h1>
-        {
-            ingredients && <table>
-                <thead>
-                <td>Name</td>
-                {/*<td>Alcoholic</td>*/}
-                </thead>
-                <tbody>
-                {ingredients.map(({name, alcoholic}, idx) =>
-                    <tr key={idx}>
-                        <td><h4>{name}</h4></td>
-                        {/*<td>{alcoholic.toString()}</td>*/}
-                    </tr>)}
-                </tbody>
-            </table>
-        }
-    </div>)
-}

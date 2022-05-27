@@ -32,8 +32,9 @@ function App() {
 
 	// recalculate, flatten and memoize unexpired in-stock ingredients but only on ingredientsInStock update
 	const validIngredientsInStock = useMemo(() => {
+		const now = new Date()
 		return ingredientsInStock.filter(({expireDate}) => {
-			return new Date(expireDate) > new Date()
+			return new Date(expireDate) > now
 		}).map(({name}) => name)
 	}, [ingredientsInStock]);
 
@@ -43,7 +44,7 @@ function App() {
 	const validCocktails = useMemo(() => {
 		const newCocktails = cocktails.filter(({ingredients}) => ingredients.every(ingredient => validIngredientsInStock.includes(ingredient)))
 		if (newCocktails.length) {
-			enqueueSnackbar(`New cocktail${newCocktails.length>1?"s":""}!`);
+			enqueueSnackbar(`New cocktail${newCocktails.length > 1 ? "s" : ""}!`);
 		} else {
 			enqueueSnackbar('No cocktails yet! Add more ingredients!');
 		}
@@ -71,7 +72,7 @@ function App() {
 	}))
 
 	return (
-		<div className="App">
+		<>
 			<LocalizationProvider dateAdapter={AdapterDateFns}>
 				<Grid container spacing={1}>
 					{ingredientsToAdd.length && <Grid container spacing={1} margin={4}>
@@ -111,7 +112,7 @@ function App() {
 												                        expireDate,
 											                        }, idx) =>
 
-												<>
+												<Grid container spacing={1} key={idx} marginTop={1}>
 													<Grid item xs={5}>
 														<h4>{name}</h4>
 													</Grid>
@@ -135,7 +136,8 @@ function App() {
 														>
 															Delete
 														</Button>
-													</Grid></>,
+													</Grid>
+												</Grid>,
 											)
 										}
                                     </>
@@ -171,7 +173,7 @@ function App() {
 					</Grid>
 				</Grid>
 			</LocalizationProvider>
-		</div>
+		</>
 	);
 }
 
