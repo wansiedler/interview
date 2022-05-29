@@ -1,20 +1,20 @@
-import React, {useMemo, useState} from 'react';
+import React, {useEffect, useMemo, useState} from 'react';
 import './App.css';
 import {ingredients} from "./components/ingredients";
 import {cocktails} from "./components/cocktails";
-import {capitalizeFirstLetters, randomizeInventory, useLocalStorage} from "./utils";
+import {capitalizeFirstLetters, generateRandomDateInTheFuture, randomizeInventory, useLocalStorage} from "./utils";
 
 import {styled} from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
-import {Grid, IconButton, TextField, Stack, Button} from "@mui/material";
+import {Button, Grid, TextField} from "@mui/material";
 import {MobileDatePicker} from "@mui/x-date-pickers";
 
 import DeleteIcon from '@mui/icons-material/Delete';
 import {LocalizationProvider} from '@mui/x-date-pickers/LocalizationProvider';
 import {AdapterDateFns} from '@mui/x-date-pickers/AdapterDateFns';
-import AddIngredient from "./components/AddIngredient";
-import {SnackbarProvider, useSnackbar} from 'notistack';
+import {useSnackbar} from 'notistack';
+import IngredientForm from "./components/IngredientForm";
 
 const Item = styled(Paper)(({theme}) => ({
 	backgroundColor: "#fff",
@@ -27,26 +27,28 @@ const Item = styled(Paper)(({theme}) => ({
 }));
 
 function App() {
+	const {enqueueSnackbar, closeSnackbar} = useSnackbar();
+	const [mounted, setMounted] = useState(false);
+
 	// get the inventory from the persistently stored or set the first randomized version
 	const [ingredientsInStock, setIngredientsInStock] = useLocalStorage("ingredientsInStock", randomizeInventory(ingredients));
 
 	// recalculate, flatten and memoize unexpired in-stock ingredients but only on ingredientsInStock update
 	const validIngredientsInStock = useMemo(() => {
-		const now = new Date()
+		const today = new Date()
 		return ingredientsInStock.filter(({expireDate}) => {
-			return new Date(expireDate) > now
+			return new Date(expireDate) > today
 		}).map(({name}) => name)
 	}, [ingredientsInStock]);
-
-	const {enqueueSnackbar, closeSnackbar} = useSnackbar();
 
 	// recalculate, flatten and memoize cocktails on validIngredientsInStock update
 	const validCocktails = useMemo(() => {
 		const newCocktails = cocktails.filter(({ingredients}) => ingredients.every(ingredient => validIngredientsInStock.includes(ingredient)))
 		if (newCocktails.length) {
-			enqueueSnackbar(`New cocktail${newCocktails.length > 1 ? "s" : ""}!`);
+			mounted && enqueueSnackbar(`New cocktail${newCocktails.length > 1 ? "s" : ""}!`);
+
 		} else {
-			enqueueSnackbar('No cocktails yet! Add more ingredients!');
+			mounted && enqueueSnackbar('No cocktails yet! Add more ingredients!');
 		}
 		return newCocktails
 	}, [validIngredientsInStock]);
@@ -60,27 +62,34 @@ function App() {
 	}
 
 	const addIngredient = (name, expireDate) => {
-		setIngredientsInStock([...ingredientsInStock, {name, expireDate, alcoholic: true}])
+		setIngredientsInStock([...ingredientsInStock, {name, expireDate}])
 	};
 
 	const deleteIngredient = (item) => {
 		setIngredientsInStock(ingredientsInStock.filter(({name}) => name !== item))
 	};
 
-	const ingredientsToAdd = ingredients.filter(({name}) => !validIngredientsInStock.includes(name)).map(({name}, idx) => ({
-		id: idx, label: name,
-	}))
+	const ingredientsToAdd = ingredients.filter(({name}) => !validIngredientsInStock.includes(name)).map(({name}, idx) => (
+		name
+	))
+
+	useEffect(() => {
+		setMounted(true)
+		return () => {
+			// setMounted(false)
+		};
+	}, []);
 
 	return (
 		<>
 			<LocalizationProvider dateAdapter={AdapterDateFns}>
 				<Grid container spacing={1}>
-					{ingredientsToAdd.length && <Grid container spacing={1} margin={4}>
-                        <AddIngredient
+					{ingredientsToAdd.length &&
+                        <IngredientForm
                             options={ingredientsToAdd}
                             addIngredient={addIngredient}
-                        />
-                    </Grid>}
+                            expireDate={generateRandomDateInTheFuture()}
+                        />}
 					<Grid item xs={8}>
 						<Item>
 							<Box margin={1}>
@@ -104,43 +113,36 @@ function App() {
 									</Box>
 								</Grid>
 								{
-									ingredientsInStock && <>
-										{
-											ingredientsInStock.map(({
-												                        name, alcoholic,
-												                        // quantity,
-												                        expireDate,
-											                        }, idx) =>
-
-												<Grid container spacing={1} key={idx} marginTop={1}>
-													<Grid item xs={5}>
-														<h4>{name}</h4>
-													</Grid>
-													<Grid item xs={5}>
-														<MobileDatePicker
-															// label="Expire date"
-															inputFormat="dd/MM/yyyy"
-															views={['year', 'month', 'day']}
-															value={new Date(expireDate)}
-															// onChange={handleChange}
-															onChange={date => updateInventory({
-																name,
-																currentDate: date,
-															})}
-															renderInput={(params) => <TextField {...params} />}
-														/>
-													</Grid>
-													<Grid item xs={2}>
-														<Button startIcon={<DeleteIcon/>}
-														        onClick={() => deleteIngredient(name)}
-														>
-															Delete
-														</Button>
-													</Grid>
-												</Grid>,
-											)
-										}
-                                    </>
+									ingredientsInStock.map(({
+										                        name, alcoholic,
+										                        // quantity,
+										                        expireDate,
+									                        }, idx) =>
+										<Grid container spacing={1} key={idx} marginTop={1}>
+											<Grid item xs={5}>
+												<h4>{name}</h4>
+											</Grid>
+											<Grid item xs={5}>
+												<MobileDatePicker
+													label="Expire date"
+													inputFormat="dd/MM/yyyy"
+													views={['year', 'month', 'day']}
+													value={new Date(expireDate)}
+													// onChange={handleChange}
+													onChange={date => updateInventory({
+														name,
+														currentDate: date,
+													})}
+													renderInput={(params) => <TextField {...params} />}
+												/>
+											</Grid>
+											<Grid item xs={2}>
+												<Button startIcon={<DeleteIcon/>}
+												        onClick={() => deleteIngredient(name)}
+												/>
+											</Grid>
+										</Grid>,
+									)
 								}
 							</Grid>
 						</Item>
@@ -157,7 +159,7 @@ function App() {
 										                     ingredients,
 									                     }, idx) => {
 										return <Item key={idx}>
-											< h4> {name} </h4>
+											<h4>{name}</h4>
 											{ingredients && <>
 												{
 													ingredients.map((ingredient, idx) => <Item

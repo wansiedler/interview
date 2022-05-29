@@ -1,9 +1,9 @@
-import {capitalizeFirstLetters} from "../utils";
 import React from "react";
 
 export type ingredientType = {
     expireDate: Date;
-    "alcoholic": boolean, "name": string
+    "alcoholic"?: boolean,
+    "name": string
 }
 
 export const ingredients = [{"alcoholic": true, "name": "Vodka"}, {
