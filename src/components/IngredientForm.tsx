@@ -51,8 +51,8 @@ export default function IngredientForm({
 		<form onSubmit={formik.handleSubmit} style={{width: "100%"}}>
 			<Grid
 				container
-				spacing={1}
-				padding={4}
+				// spacing={1}
+				// padding={4}
 			>
 				<Grid item xs={4}>
 					<Autocomplete
