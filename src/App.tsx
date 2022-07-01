@@ -1,90 +1,48 @@
-import React, {ReactElement, useState} from 'react';
+import React from 'react';
 import './App.css';
 
-function checkNumber(input) {
-	console.log(input)
-	let a = Number.NEGATIVE_INFINITY
-	for (let i = 0; i < input.length; i++) {
-		let currentSum = input[i]
-		console.log(`=====`)
-		console.log(currentSum)
-		for (let j = i + 1; j < input.length; j++) {
-			console.log(`  ${input[j]}`)
-			currentSum += input[j]
-			if (currentSum > a) {
-				console.log(`>>> ${currentSum}`)
-				a = currentSum
-			} else {
-				console.log(` >>> ${currentSum} < ${a}`)
-			}
+const apps = [
+	{name: "app2", RAM: 128, CPUCore: 3, diskSpace: 200},
+	{name: "app2", RAM: 128, CPUCore: 4, diskSpace: 200},
+	{name: "app2", RAM: 128, CPUCore: 2, diskSpace: 200},
+	{
+		name: "app3",
+		RAM: 128,
+		CPUCore: 1, diskSpace: 200,
+	}]
+
+// const totalRam = apps.reduce((previousValue, currentValue) => previousValue + currentValue.RAM, 0)
+
+const server = {name: "Server1", RAM: 128, CPUCore: 7, diskSpace: 200}
+
+export function getTotalServers(apps, {CPUCores = 2, RAM = 2, diskSpace = 2}) {
+	let totalServers = 0;
+
+	let tempCPURCores = 0
+	let tempRAM = 0
+	let tempDiskSpace = 0
+
+	apps.forEach((app) => {
+		tempCPURCores -= app.CPUCore
+		tempRAM -= app.RAM
+		tempDiskSpace -= app.diskSpace
+
+		if (tempCPURCores <= 0 || tempRAM <= 0 || tempDiskSpace <= 0) {
+			totalServers += 1
+			tempCPURCores = CPUCores
+			tempRAM = RAM
+			tempDiskSpace = diskSpace
 		}
-	}
-	return a
+	})
+
+	return totalServers
 }
 
-type MenuItem = {
-	title: string;
-	subItems?: Array<string>;
-};
-
-type MenuConfig = Array<MenuItem>;
-
-function Solution({menuConfig}: { menuConfig: MenuConfig }): ReactElement {
-	const [active, setActive] = useState("");
-
-	return <div className="menu-wrapper">
-		{menuConfig.map(
-			({title, subItems}, idx) =>
-				<div data-test-id={"first-level-" + title.toLowerCase()}
-
-				     key={idx}
-				>
-					{title}
-					{
-						subItems && <>
-                            <button
-                                data-test-id={"button-" + title.toLowerCase()}
-                                onClick={() => {
-									setActive(active === title ? "" : title)
-								}}
-                            >
-								{active !== title ? "Expand" : "Hide"}
-                            </button>
-							{active === title ? <ul data-test-id={"ul-" + title.toLowerCase()}>
-								{
-									subItems.map((item, idx) => <li
-										data-test-id={"li-" + title.toLowerCase() + "-" + item.toLowerCase()}
-										key={idx}
-									>{item}</li>)
-								}
-							</ul> : null}
-
-                        </>
-					}
-				</div>,
-		)}
-
-	</div>;
-}
+// getTotalServers(apps.map(({CPUCore}) => CPUCore), 8)
 
 function App() {
-	// const a = checkNumber([1, 4, -6, 3, 7, -3, 10])
 	return <>
-		<Solution
-			menuConfig={[
-				{
-					title: 'Home',
-				},
-				{
-					title: 'Services',
-					subItems: ['Cooking', 'Cleaning'],
-				},
-				{
-					title: 'Contact',
-					subItems: ['Phone', 'Mail'],
-				},
-			]}
-		/>
+		hello
 	</>
 }
 
